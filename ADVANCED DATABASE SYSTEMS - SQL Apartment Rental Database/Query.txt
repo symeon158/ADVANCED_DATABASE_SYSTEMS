@@ -1,0 +1,185 @@
+--All the records from one table
+
+SELECT * FROM owners;
+--A projection with 3 columns
+
+SELECT APP_ID,O_TIN,STREET FROM appartments ORDER BY APP_ID,O_TIN,STREET DESC;
+
+/*Restriction queries with multiple clauses demonstrating the following
+o E.g. the tenants from a specific country
+o a condition matching a pattern e.g. begins with J, ends with SON.
+o a negative condition predicate e.g. are not from Greece
+o a date range condition e.g. last year April - September*/
+
+SELECT * FROM tenants
+WHERE (country = 'SPAIN' OR country = 'ENGLAND') AND ten_surname LIKE 'C%LLO' 
+AND (country != 'GREECE') AND (birthdate BETWEEN '01-apr-1969' AND '30-sep-1985');
+
+/*Join queries with data from
+o 2 tables
+o 3 tables
+o More tables*/
+
+SELECT tenants.*, rental.*
+FROM tenants
+JOIN rental ON tenants.ten_id = rental.ten_id;
+
+SELECT tenants.*, rental.*, appartments.*
+FROM tenants
+JOIN rental ON tenants.ten_id = rental.ten_id
+JOIN appartments ON rental.app_id = appartments.app_id;
+
+SELECT tenants.*, rental.*, appartments.*, review.*
+FROM tenants
+JOIN rental ON tenants.ten_id = rental.ten_id
+JOIN appartments ON rental.app_id = appartments.app_id
+JOIN review ON appartments.app_id = review.app_id;
+
+--Aggregate functions
+
+--Show the tenants whose surname starts with A and ends with S.
+SELECT * FROM tenants WHERE TEN_SURNAME LIKE 'A%S';
+
+--Show the total number of tenants per country.
+SELECT country, COUNT(*) as total_tenants FROM tenants GROUP BY country;
+
+--Which apartment was the most popular (was rented the most times)?
+SELECT APPARTMENTS.APP_ID, APPARTMENTS.CITY, APPARTMENTS.STREET,COUNT(RENTAL.APP_ID) as TOTAL_RENTALS FROM APPARTMENTS
+JOIN rental ON APPARTMENTS.APP_ID = RENTAL.APP_ID  GROUP BY APPARTMENTS.APP_ID,APPARTMENTS.CITY, APPARTMENTS.STREET 
+ORDER BY total_rentals DESC FETCH FIRST 1 ROW ONLY;
+
+--Show the owners (surname, name and TIN) in an ascending order and the apartments they own.
+SELECT OWNERS.O_SURNAME, OWNERS.O_NAME, OWNERS.O_TIN, APPARTMENTS.CITY, APPARTMENTS.STREET
+FROM OWNERS
+JOIN APPARTMENTS ON OWNERS.O_TIN = APPARTMENTS.O_TIN
+ORDER BY OWNERS.O_SURNAME, OWNERS.O_NAME, OWNERS.O_TIN;
+
+--Which owner (surname, name and TIN) has the most apartments.
+SELECT OWNERS.O_SURNAME, OWNERS.O_NAME, OWNERS.O_TIN, COUNT(APPARTMENTS.APP_ID) as TOTAL_APPARTMENTS
+FROM OWNERS
+JOIN APPARTMENTS ON OWNERS.O_TIN = APPARTMENTS.O_TIN
+GROUP BY OWNERS.O_SURNAME, OWNERS.O_NAME, OWNERS.O_TIN
+ORDER BY TOTAL_APPARTMENTS  DESC
+FETCH FIRST 1 ROW ONLY;
+
+--In which city you can find the most expensive apartment?
+SELECT city, MAX(price) as most_expensive_apartment
+FROM appartments
+GROUP BY city
+ORDER BY most_expensive_apartment DESC
+FETCH FIRST 1 ROW ONLY;
+
+--How many reviews were written in 2020?
+SELECT COUNT(rev_id) as total_reviews
+FROM review
+WHERE EXTRACT(YEAR FROM rev_date) = 2020;
+
+--Which tenant (surname and name) has left the most reviews?
+SELECT tenants.ten_surname, tenants.ten_name, COUNT(review.ten_id) as total_reviews
+FROM tenants
+JOIN review ON tenants.ten_id = review.ten_id
+GROUP BY tenants.ten_surname, tenants.ten_name
+ORDER BY total_reviews DESC
+FETCH FIRST 1 ROW ONLY;
+
+--Show the apartments that were rented in August (regardless of the year).
+SELECT appartments.app_id, rental.start_date, rental.end_date
+FROM appartments
+JOIN rental ON appartments.app_id = rental.app_id
+WHERE EXTRACT(MONTH FROM rental.start_date) = 8 OR EXTRACT(MONTH FROM rental.end_date) = 8;
+
+--How many apartments that haven’t been rented exist?
+SELECT COUNT(app_id) as total_apartments FROM appartments WHERE app_id NOT IN (SELECT app_id FROM rental);
+
+--Show the oldest female tenant
+SELECT tenants.ten_id, tenants.ten_name, tenants.ten_surname, tenants.birthdate FROM tenants WHERE tenants.gender = 'F' ORDER BY tenants.birthdate ASC FETCH FIRST 1 ROW ONLY;
+
+--Show the owners that none of their apartments were rented.
+SELECT owners.o_tin, owners.o_name, owners.o_surname FROM owners WHERE owners.o_tin NOT IN (SELECT o_tin FROM appartments WHERE app_id IN (SELECT app_id FROM rental));
+
+--Which tenants rented an apartment that its street address has the word “SAINT” in it?
+SELECT tenants.ten_id, tenants.ten_name, tenants.ten_surname 
+FROM tenants JOIN rental ON tenants.ten_id = rental.ten_id JOIN appartments ON rental.app_id = appartments.app_id 
+WHERE UPPER(appartments.street) LIKE '%SAINT%';
+
+--Show the apartments in descending order, based on the average of their review scores
+SELECT appartments.app_id,appartments.city,appartments.street, AVG(review.star_rev) as avg_review
+FROM appartments
+JOIN rental ON appartments.app_id = rental.app_id
+JOIN review ON rental.ten_id = review.ten_id
+GROUP BY appartments.app_id,appartments.city,appartments.street
+ORDER BY avg_review DESC;
+
+--Which apartment in “THESSALONIKI” has the highest review average?
+SELECT appartments.app_id,appartments.city,appartments.street, AVG(review.star_rev) as avg_review
+FROM appartments
+JOIN rental ON appartments.app_id = rental.app_id
+JOIN review ON rental.ten_id = review.ten_id
+WHERE UPPER(appartments.city) = 'THESSALONIKI'
+GROUP BY appartments.app_id,appartments.city,appartments.street
+ORDER BY avg_review DESC
+FETCH FIRST 1 ROW ONLY;
+
+--Which tenant has rented the most apartments?
+SELECT tenants.ten_id,tenants.ten_name,tenants.ten_surname, COUNT(rental.app_id) as rented_apartments
+FROM tenants
+JOIN rental ON tenants.ten_id = rental.ten_id
+GROUP BY tenants.ten_id,tenants.ten_name,tenants.ten_surname
+ORDER BY rented_apartments DESC
+FETCH FIRST 1 ROW ONLY;
+
+--Show the average score of the apartment reviews made by female and male tenants.
+SELECT  tenants.gender, round(AVG(review.star_rev),2) as avg_score
+FROM tenants
+JOIN rental ON tenants.ten_id = rental.ten_id
+JOIN review ON rental.ten_id = review.ten_id
+WHERE tenants.gender IN ('M', 'F')
+GROUP BY tenants.gender;
+
+--Show the most popular city (the city that its apartments were rented the most times) per gender
+SELECT tenants.gender, appartments.city,COUNT(*) as rented_times
+FROM tenants
+JOIN rental ON tenants.ten_id = rental.ten_id
+JOIN appartments ON rental.app_id = appartments.app_id
+GROUP BY tenants.gender, appartments.city
+ORDER BY rented_times DESC, tenants.gender, appartments.city ;
+
+/*Assume a username for the tenants is made up of the first 4 letters of the first name added to the first 4 letters of the surname. 
+Write the query to create it and show the username for each user. Do not attempt to input it in the tenants table.*/
+SELECT  tenants.ten_id,  tenants.ten_name, tenants.ten_surname,
+SUBSTR(tenants.ten_name, 1, 4) || SUBSTR(tenants.ten_surname, 1, 4) as username
+FROM tenants;
+
+--Show the total revenue from ALL the apartments (total of the price multiplied per rental days) per year.
+SELECT EXTRACT(YEAR FROM rental.start_date) as year, 
+SUM(appartments.price * ( rental.end_date - rental.start_date)) as total_revenue
+FROM rental
+JOIN appartments ON rental.app_id = appartments.app_id
+GROUP BY EXTRACT(YEAR FROM rental.start_date)
+ORDER BY year;
+
+--Show the number of rentals per month in a specific year:
+SELECT  EXTRACT(MONTH FROM rental.start_date) as month, COUNT(*) as rentals_count
+FROM rental
+WHERE EXTRACT(YEAR FROM rental.start_date) = 2020
+GROUP BY EXTRACT(MONTH FROM rental.start_date)
+ORDER BY month;
+
+--Show the percentage of rented apartments per owner:
+WITH rented_apartments AS (
+    SELECT 
+        appartments.app_id,
+        appartments.o_tin
+    FROM rental
+    JOIN appartments ON rental.app_id = appartments.app_id
+    GROUP BY appartments.app_id, appartments.o_tin
+)
+SELECT 
+    owners.o_tin,
+    owners.o_surname,
+    owners.o_name,
+    (COUNT(rented_apartments.app_id) / COUNT(DISTINCT appartments.app_id)) * 100 as percentage
+FROM owners
+LEFT JOIN rented_apartments ON owners.o_tin = rented_apartments.o_tin
+JOIN appartments ON appartments.o_tin = owners.o_tin
+GROUP BY owners.o_tin, owners.o_surname, owners.o_name;

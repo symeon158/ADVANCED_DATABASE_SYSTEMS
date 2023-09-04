@@ -1,0 +1,142 @@
+-------------------------PRIMARY KEYS-----------------------------
+alter table owners
+add constraint Otin_pk
+primary key (O_TIN);
+
+alter table appartments
+add constraint AppId_pk
+primary key (APP_ID);
+
+alter table tenants
+add constraint TenId_pk
+primary key (TEN_ID);
+
+alter table review
+add constraint RevId_pk
+primary key (REV_ID);
+
+alter table rental
+add constraint RentId_pk
+primary key (RENT_ID);
+
+-----------------------OWNERS CONSTRAINTS--------------------------
+alter table owners
+add constraint Oname_ck_upper
+check (O_NAME = UPPER(O_NAME));
+
+alter table owners
+add constraint Osurname_ck_upper
+check (O_SURNAME = UPPER(O_SURNAME));
+
+alter table owners
+add constraint OwnCity_ck_upper
+check (CITY = UPPER(CITY));
+
+alter table owners
+add constraint Region_ck_upper
+check (REGION = UPPER(REGION));
+
+alter table owners
+add constraint OwnBankAccount_ck_upper
+check (BANK_ACCOUNT = UPPER(BANK_ACCOUNT));
+
+alter table owners
+add constraint OwnBankAccount_un
+UNIQUE(BANK_ACCOUNT);
+
+alter table owners
+add constraint Email_un
+UNIQUE(EMAIL);
+
+alter table owners
+add constraint Mobile_un
+UNIQUE(MOBILE);
+
+-------------------APPARTMENTS CONSTRAINTS------------------------
+alter table appartments
+add constraint Street_ck_upper
+check (STREET = UPPER(STREET));
+
+alter table appartments
+add constraint AppCity_ck_upper
+check (CITY = UPPER(CITY));
+
+alter table appartments
+add constraint Area_ck_upper
+check (AREA = UPPER(AREA));
+
+---------------------TENANTS CONSTRAINTS----------------------------
+alter table tenants
+add constraint TenName_ck_upper
+check (TEN_NAME = UPPER(TEN_NAME));
+
+alter table tenants
+add constraint TenSurname_ck_upper
+check (TEN_SURNAME = UPPER(TEN_SURNAME));
+
+alter table tenants
+add constraint Country_ck_upper
+check (COUNTRY = UPPER(COUNTRY));
+
+alter table tenants
+add constraint TenTin_un
+UNIQUE(TEN_TIN);
+
+alter table tenants
+add constraint TenBankAccount_un
+UNIQUE(BANK_ACCOUNT);
+
+alter table tenants
+add constraint Gender_ck
+check (GENDER in ('M', 'F', 'O'));
+
+---------------------REVIEW CONSTRAINTS--------------------------
+alter table review
+add constraint RevRentalDays_ck
+check (RENTAL_DAYS > 0);
+
+alter table review
+add constraint StarRev_ck
+check (STAR_REV in (0, 1, 2, 3, 4, 5));
+
+--Constraint AppStdate_un means that the same apartment cannot be rented at the same time by differnet tenants.
+alter table review
+add constraint AppStdate_un
+UNIQUE(APP_ID, START_DATE);
+
+--------------------RENTAL CONSTRAINTS---------------------------
+alter table rental
+add constraint RentalDays_ck
+check (RENTAL_DAYS > 0);
+
+-------------------------FOREIGN KEYS-----------------------------
+alter table appartments
+add constraint AppOtin_fk
+foreign key (O_TIN)
+references OWNERS(O_TIN);
+
+alter table review
+add constraint RevTenId_fk
+foreign key (TEN_ID)
+references TENANTS(TEN_ID);
+
+alter table review
+add constraint RevAppId_fk
+foreign key (APP_ID)
+references APPARTMENTS(APP_ID);
+
+alter table rental
+add constraint RentAppId_fk
+foreign key (APP_ID)
+references APPARTMENTS(APP_ID);
+
+alter table rental
+add constraint RentTenId_fk
+foreign key (TEN_ID)
+references TENANTS(TEN_ID);
+
+
+-----------SHOW CONSTRAINTS----------------------
+SELECT constraint_name, constraint_type, status
+FROM user_constraints
+WHERE constraint_name NOT LIKE 'SYS%' AND table_name IN ('OWNERS','APPARTMENTS','TENANTS','REVIEW', 'RENTAL');

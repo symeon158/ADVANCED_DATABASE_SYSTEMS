@@ -1,0 +1,116 @@
+/*change date format to DD-MON-YYYY
+with command alter session set nls_date_format.*/
+
+alter session set nls_date_format = 'DD-MON-YYYY';
+
+--OWNERS TABLE--
+/*char datatype FOR O_TIN because tin numbers can start with 0.
+varchar2 datatype for BANK_ACCOUNT because an iban can be given instead of a bank account. Maximum characters for IBAN is 34.
+varchar2 datatype for MOBILE because the mobile number can have + symbol or start with 00 and 14 characters including the telephone code.*/
+
+create table OWNERS(
+O_TIN CHAR(9),
+O_NAME VARCHAR2(30) NOT NULL,
+O_SURNAME VARCHAR2(30) NOT NULL,
+CITY VARCHAR2(30),
+REGION VARCHAR2(30),
+BIRTHDATE DATE,
+BANK_ACCOUNT VARCHAR2(34) NOT NULL,
+EMAIL VARCHAR2(256) NOT NULL,
+MOBILE VARCHAR2(14) NOT NULL);
+
+--APPARTMENTS TABLE--
+/*char datatype FOR O_TIN because tin numbers can start with 0.*/
+
+create table APPARTMENTS(
+APP_ID NUMBER,
+O_TIN CHAR(9),
+STREET VARCHAR2(30) NOT NULL,
+STREET_NUM NUMBER(3) NOT NULL,
+CITY VARCHAR2(30) NOT NULL,
+AREA VARCHAR2(30) DEFAULT 'CENTER' NOT NULL,
+POSTAL_CODE CHAR(5) NOT NULL,
+FLOOR NUMBER(2) DEFAULT 1,
+SURFACE NUMBER(3) DEFAULT 50,
+PRICE NUMBER(6,2) NOT NULL);
+
+--TENANTS TABLE--
+/*char datatype for TEN_TIN because tin can start with 0.
+VARCHAR2(256) for the EMAIL because max characters of an email are 256.
+varchar2 datatype for CONTACT_NUM because the mobile number can have + symbol or start with 00 and 14 characters including the telephone code.
+varchar2 datatype for BANK_ACCOUNT because an iban can be given instead of a bank account. Maximum characters for IBAN is 34.*/
+
+create table TENANTS(
+TEN_ID NUMBER,
+TEN_NAME VARCHAR2(30) NOT NULL,
+TEN_SURNAME VARCHAR2(30) NOT NULL,
+TEN_TIN CHAR(9) NOT NULL,
+GENDER CHAR DEFAULT 'F',
+EMAIL VARCHAR2(256) NOT NULL,
+CONTACT_NUM VARCHAR2(14) NOT NULL,
+BIRTHDATE DATE,
+COUNTRY VARCHAR2(30),
+NUM_OF_TEN NUMBER(2) DEFAULT 1,
+BANK_ACCOUNT VARCHAR2(34) NOT NULL);
+
+
+create table REVIEW(
+REV_ID NUMBER,
+TEN_ID NUMBER,
+APP_ID NUMBER,
+REV_DATE DATE DEFAULT SYSDATE NOT NULL,
+START_DATE DATE,
+END_DATE DATE,
+RENTAL_DAYS NUMBER(3) NOT NULL,
+STAR_REV NUMBER(1) DEFAULT 5,
+TEXT_REV VARCHAR2(4000) DEFAULT 'INSERT YOUR COMMENT');
+
+
+
+create table RENTAL(
+RENT_ID NUMBER,
+APP_ID NUMBER,
+TEN_ID NUMBER,
+NUM_OF_TEN NUMBER(2) DEFAULT 1,
+START_DATE DATE NOT NULL,
+END_DATE DATE NOT NULL,
+RENTAL_DAYS NUMBER(3) NOT NULL);
+
+----------------------------------SEQUENCES----------------------------------------------------------
+--The appartments_AppId sequence poses integrity risks and has been created only as a paradigm in order to be dropped in task 2.4.
+create sequence appartments_AppId
+increment by 1
+start with 100
+nocycle;
+
+--The tenants_TenId sequence poses integrity risks and has been created only as a paradigm in order to be dropped in task 2.4.
+create sequence tenants_TenId
+increment by 1
+start with 1
+nocycle;
+
+create sequence review_RevId
+increment by 1
+start with 1000
+nocycle;
+
+create sequence rental_RentId
+increment by 1
+start with 150
+nocycle;
+
+
+
+---------------DESC TABLES-----------------------
+desc owners;
+desc appartments;
+desc tenants;
+desc review;
+desc rental;
+
+SELECT table_name, column_name, data_type, data_length, data_precision, nullable
+FROM user_tab_columns
+WHERE table_name IN ('OWNERS','APPARTMENTS','TENANTS','REVIEW', 'RENTAL');
+
+SELECT sequence_name, min_value, max_value, increment_by, last_number
+FROM user_sequences;

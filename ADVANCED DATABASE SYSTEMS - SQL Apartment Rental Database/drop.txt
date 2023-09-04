@@ -1,0 +1,75 @@
+--------------------------OWNERS-----------------------
+--First drop the constraint
+alter table OWNERS
+drop constraint Region_ck_upper;
+
+--and then the column
+alter table OWNERS
+drop column REGION;
+
+------------------------APPARTMENTS----------------------
+alter table APPARTMENTS
+drop column SURFACE;
+
+--------------------------TENANTS-----------------------
+--This constraint shall be dropped because two people may need to have differnet tenant ids (accounts) but with the same bank account (for example husband and wife).
+alter table TENANTS
+drop constraint TenBankAccount_un;
+
+alter table TENANTS
+drop column NUM_OF_TEN;
+
+--------------------------REVIEW-----------------------
+alter table REVIEW
+drop column END_DATE;
+
+--------------------------RENTAL-----------------------
+alter table RENTAL
+drop column END_DATE;
+
+
+------------------------SEQUENCES----------------------
+drop sequence appartments_AppId;
+
+drop sequence tenants_TenId;
+
+
+-------------DROP REVIEW TABLE (THIS IS JUST AN EXAMPLE FOR THE SAKE OF TASK 2.4. THE REVIEW TABLE IS NECESSARY FOR THE EXERCISE)-----------------------
+/*
+First, we are going to delete the foreign key constraints and then the unique and check constraints.
+The next step is to delete all the values (rows) of the table and finally delete the entire table with its columns.
+*/
+
+alter table review
+drop constraint RevTenId_fk;
+
+alter table review
+drop constraint RevAppId_fk;
+
+alter table review
+drop constraint RevRentalDays_ck;
+
+alter table review
+drop constraint StarRev_ck;
+
+alter table review
+drop constraint AppStdate_un;
+
+alter table review
+drop constraint RevId_pk;
+
+truncate table review;
+
+drop sequence review_RevId;
+
+drop table review;
+
+----------------DROP DATABASE--------------------
+drop sequence rental_RentId;
+
+BEGIN FOR t IN
+(SELECT table_name FROM user_tables WHERE table_name IN ('OWNERS', 'APPARTMENTS', 'TENANTS', 'REVIEW', 'RENTAL'))
+LOOP EXECUTE IMMEDIATE 'DROP TABLE ' || t.table_name || ' CASCADE CONSTRAINTS'; END LOOP; END;
+/
+
+
