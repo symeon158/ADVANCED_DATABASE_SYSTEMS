@@ -45,5 +45,5 @@ A detailed video showcasing the project can be found here: [Show project]((https
 - **Technologies Used**: SQL, Oracle
 - **Demonstrated Skills**: In-depth understanding and application of varied SQL scripting for database operations, adherence to ERD and business rules, and comprehensive database evaluation.
 
-**Note**: Ensure to thoroughly check the original coursework document for detailed instructions, examples, and specific requirements to guarantee accurate and thorough submission.
+
 
