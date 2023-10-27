@@ -36,7 +36,7 @@ The coursework focuses on creating, managing, and evaluating a database system i
 - While the database design is minimal, the emphasis of the evaluation is on testing and practical application of database management concepts.
 
 ### [Video Demonstration](#Video-Demonstration)
-A detailed video showcasing the project can be found here: [Show project]((https://1drv.ms/v/s!AiFPoorne5KpjB9TehEpmuw1uEQM?e=aWNzR7)
+A detailed video showcasing the project can be found here: [Show project](https://1drv.ms/v/s!AiFPoorne5KpjB9TehEpmuw1uEQM?e=aWNzR7)
 
 ---
 
